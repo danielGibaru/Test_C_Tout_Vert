@@ -12,19 +12,9 @@ namespace Test_C_Tout_Vert.Controllers
         {
             return View();
         }
-
-        public ActionResult About()
+        public ActionResult Album()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
+            return View("album");
         }
     }
 }

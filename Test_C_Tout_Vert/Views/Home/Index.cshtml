@@ -1,31 +1,110 @@
 ﻿@{
     ViewBag.Title = "Home Page";
 }
+<div id="search" class="input-group">
+    <input type="text" class="form-control" placeholder="Votre artiste ?" aria-label="Recipient's username" aria-describedby="basic-addon2" name="search" id="enter">
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
 </div>
+<div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+    <script type="text/javascript" src="~/Scripts/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+    <script type="text/javascript">
+
+    </script>
+</div>
+<div id="spotify" class="container">
+    <p id="debug"></p>
+    <div class="row">
+        <div id="result"></div>
+
     </div>
 </div>
+<script type="text/javascript">
+        $(document).ready(function () {
+        var client_id = 'd968b7705f394667afb643b2d7a8c2d0';
+        var client_secret = '86b330678dab42ecacaa6790c2a32b81';
+        var auth = btoa(client_id + ':' + client_secret);
+        //alert(auth);
+        $.ajax({
+                type: "POST",
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                dataType: 'jsonp',
+                url: "https://accounts.spotify.com/api/token",
+                headers: {
+                    "Authorization": 'Basic '+ btoa(client_id + ':' + client_secret),
+                },
+                data: {
+                    grant_type: "client_credentials",
+                },
+                success: function (result) {
+                    alert(result)
+                },
+            });
+
+        $("#enter").keyup(function () {
+            var url = 'https://api.spotify.com/v1/search?q=' + $('input[name="search"]').val() + '&type=artist%2Calbum&limit=50&offset=0';
+            $('#spotify').show();
+            $('#result').html(' ');
+            search_artiste(url);
+        });
+
+    });
+
+
+    function search_artiste(url) {
+
+        var OAuth_Token = 'BQCxmOk-xMGB35uOpREXExozpT5tADBdPabBjYgRU4-LGdqFnLjyYCjD-duDDxwFwnL7rRoCf4ArpL0aMbPB0_NZepfpI31hRJqzxhTLvcWjvneV-REYO-FFS0WxRCNrWH9ow05L54YsPg5zIBF0iK7ZsQ1aSRU';
+
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'json',
+            headers: { 'Authorization': "Bearer " + OAuth_Token },
+            data: {},
+            success: function (response) {
+           
+                response.artists.items.forEach(function (item) {
+                    $('#result').append('<div id="artists" class="col-12 row"><div class="col-3"><img class="img-thumbnail" id="img" src="' + item.images[0].url + '" alt="Card image cap"></div><div class="col-9"><h1 class="text-center" id="nom">' + item.name + '</h1><p class="card-text" id= "StyleDeMusique" >Genre : ' + item.genres + '</p><div class="progress" ><div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width:' + item.popularity + '%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Populaire à ' + item.popularity + '%</div></div ><br/><button id="bList' + item.id + '" class="btn btn-success btn-lg btn-block">Albums</button><br/>');
+                    $('#bList' + item.id).click(function () {
+                        $("#result").hide();
+                        $("#enter").hide();
+                        $("#album").show();
+                        response.albums.items.forEach(function (item) {
+                            if (item.album_type == 'album') {
+                                $('#album').append('<li><a href="' + item.external_urls.spotify + '" id="al" target="_blank" class="col-12 row"><div class="col-3"><img class="img-thumbnail" id="img" src="' + item.images[2].url + '" alt="Card image cap"></div><div class="col-9"><h1 class="text-center" id="nom">' + item.name + '</h1></div></a></li>');
+                            }
+                            pagination();
+                        });
+                    });
+                });
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                $('#error').attr('class', 'alert alert-danger').html(xhr.status + ' ' + thrownError);
+            }
+        });
+    }
+</script>
+<script type="text/javascript">
+    function pagination() {
+        var monkeyList = new List('allAbl', {
+            valueNames: ['col-12'],
+        page: 3,
+        pagination: true
+    });
+    }
+</script>
+<div id="allAbl">
+    <ul id="album" class="list">
+    </ul>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+        </ul>
+    </nav>
+</div>
+
